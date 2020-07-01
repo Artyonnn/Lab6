@@ -18,6 +18,6 @@ BEGIN
    ELSE
    v_tipo_de_transaccion:=1; 
    END IF;
-   INSERT INTO auditoria VALUES (secuencia_id_transaccion.NEXTVAL, :OLD.numero_de_cuenta,:OLD.ID_C,:old.tipo_de_ahorro,v_tipo_de_transaccion,:OLD.saldo_de_ahorro,v_saldot,:new.saldo_de_ahorro,user,sysdate);
+   INSERT INTO auditoria VALUES (secuencia_id_transaccion.NEXTVAL, :OLD.numero_de_cuenta,'Ahorros',:OLD.ID_C,:old.tipo_de_ahorro,v_tipo_de_transaccion,:OLD.saldo_de_ahorro,v_saldot,:new.saldo_de_ahorro,user,sysdate);
 END I_auditoria;
 /

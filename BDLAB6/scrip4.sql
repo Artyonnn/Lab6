@@ -8,7 +8,7 @@ p_monto_temporal:=(p_tasa_de_interes/100)*p_saldoactual;
 return p_monto_temporal;
 end calcular_interes;
 /
- 
+
 create or replace PROCEDURE Actualizacion(
     
 p_estado out varchar2)as
@@ -29,19 +29,26 @@ select saldo_de_interes into v_saldo_de_interes from ahorros where cod_sucursal=
 select saldo_de_ahorro into v_saldo_de_ahorro from ahorros where cod_sucursal=v_indice.cod_sucursal and id_c=v_indice.Id_c;
 select monto_deposito_retiro into v_monto_del_deposito_o_retiro from transadeporeti 
 where cod_sucursal=v_indice.cod_sucursal and id_c=v_indice.Id_c and id_transadeporeti=v_indice.id_transadeporeti and tipo_de_transaccion=v_indice.tipo_de_transaccion;
-v_interes:=calcular_interes(v_saldo_de_ahorro,v_tasa_de_interes);
+v_interes:=calcular_interes(v_monto_del_deposito_o_retiro,v_tasa_de_interes);
 
-if v_indice.tipo_de_transaccion=1 THEN
+if v_indice.tipo_de_transaccion=1  and v_indice.tipo_de_ahorro <> 2   THEN
 update ahorros
-set saldo_de_ahorro=v_saldo_de_ahorro+v_monto_del_deposito_o_retiro,saldo_de_interes=v_saldo_de_interes+v_interes,fecha_de_deposito=sysdate,usuario=user,fecha_de_modificacion=sysdate
-where cod_sucursal=v_indice.cod_sucursal and id_c=v_indice.Id_c and tipo_de_ahorro=v_indice.tipo_de_ahorro;
+set saldo_de_ahorro=v_saldo_de_ahorro+ v_monto_del_deposito_o_retiro+ v_interes,saldo_de_interes=v_saldo_de_interes+v_interes,fecha_de_deposito=sysdate,usuario=user,fecha_de_modificacion=sysdate
+where cod_sucursal=v_indice.cod_sucursal and id_c=v_indice.Id_c and tipo_de_ahorro=v_indice.tipo_de_ahorro ;
+
+elsif v_indice.tipo_de_transaccion=1  and v_indice.tipo_de_ahorro= 2   THEN
+update ahorros
+set saldo_de_ahorro=v_saldo_de_ahorro+ v_monto_del_deposito_o_retiro+v_interes,saldo_de_interes=v_saldo_de_interes+v_interes,fecha_de_deposito=sysdate,usuario=user,fecha_de_modificacion=sysdate
+where cod_sucursal=v_indice.cod_sucursal and id_c=v_indice.Id_c and tipo_de_ahorro=v_indice.tipo_de_ahorro ;
+
 elsif v_indice.tipo_de_transaccion=2 and v_indice.tipo_de_ahorro=2 and v_saldo_de_ahorro>v_monto_del_deposito_o_retiro THEN
 update ahorros
-set saldo_de_ahorro=v_saldo_de_ahorro-v_monto_del_deposito_o_retiro,fecha_de_retiro=sysdate,usuario=user,fecha_de_modificacion=sysdate
+set saldo_de_ahorro=v_saldo_de_ahorro-v_monto_del_deposito_o_retiro,saldo_de_interes=v_saldo_de_interes+v_interes,fecha_de_retiro=sysdate,usuario=user,fecha_de_modificacion=sysdate
 where cod_sucursal=v_indice.cod_sucursal and id_c=v_indice.Id_c and tipo_de_ahorro=v_indice.tipo_de_ahorro;
 end if;
 end loop;
  
+
  EXCEPTION 
          WHEN dup_val_on_index THEN 
               p_estado:='Este valor ya existe';
@@ -49,6 +56,8 @@ end loop;
               p_estado:='No se ha creado el registro...';
 end Actualizacion;
 /
+
+
 SET SERVEROUTPUT ON
 declare
 v_estado varchar(50);

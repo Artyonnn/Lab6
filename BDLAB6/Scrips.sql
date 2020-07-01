@@ -50,6 +50,7 @@ Create table ahorros(
 Create table auditoria(
     id_transaccion number(10),
     numero_de_cuenta number(10),
+    tabla varchar2(20),
     ID_C number(6),
     tipo_de_ahorro number(10),
     tipo_de_transaccion number(10),
